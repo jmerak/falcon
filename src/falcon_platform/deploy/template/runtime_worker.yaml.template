@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: WORKER_NAME
+spec:
+  type: NodePort
+  ports:
+    - port: WORKER_CLUSTER_PORT  #这里port集群内部clusterIP 对应的端口
+      targetPort: WORKER_TARGET_PORT  #这里是pod监听的端口， port和nodePort的流量最后都会到这里
+      nodePort: WORKER_NODE_PORT  #这里是物理机的端口
+  selector:
+    app: WORKER_NAME
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: WORKER_NAME
+  labels:
+    app: WORKER_NAME
+spec:
+  restartPolicy: Never
+  containers:
+    - image: FALCON_WORKER_IMAGE
+      name: WORKER_NAME
+      imagePullPolicy: IfNotPresent
+      env:
+        - name: MASTER_ADDR
+          value: "MASTER_ADDR_PLACEHOLDER"
+        - name: SERVICE_NAME
+          value: "SERVICE_NAME_PLACEHOLDER"
+        - name: EXECUTOR_TYPE
+          value: "EXECUTOR_TYPE_PLACEHOLDER"
+        - name: WORKER_ADDR
+          value: "WORKER_ADDR_PLACEHOLDER"
+        - name: Env
+          value: "Env_PLACEHOLDER"
+        - name: EXECUTOR_NAME
+          value: "WORKER_NAME"
+        - name: TASK_DATA_PATH
+          value: "/go/trainData"     # by default, read data from this dir
+        - name: TASK_MODEL_PATH
+          value: "/go/trainModels"   # by default, read data from this dir
+        - name: TASK_DATA_OUTPUT
+          value: "/go/ProcessedData"   # by default, read data from this dir
+        - name: RUN_TIME_LOGS
+          value: "HOST_PATH/runtime_logs/WORKER_NAME"   # by default, read data from this dir
+      ports:
+        - containerPort: WORKER_TARGET_PORT  #这里containerPort是容器内部的port
+          name: "port-WORKER_TARGET_PORT"  # .ports[0].name: Invalid value: "train-8490548680670953438": must be no more than 15 characters
+      volumeMounts:
+        - name: falcon-partyserver
+          mountPath: /go/logs
+        - name: falcon-train-data
+          mountPath: /go/trainData
+        - name: falcon-train-model
+          mountPath: /go/trainModels
+        - name: falcon-processed-data
+          mountPath: /go/trainDataOutput  # spec.containers[0].volumeMounts[3].mountPath: Invalid value: /go/trainModels: must be unique
+  volumes:
+    - name: falcon-partyserver
+      hostPath:
+        path: HOST_PATH/runtime_logs/WORKER_NAME
+    - name: falcon-train-data
+      hostPath:
+        path: HOST_DATA_PATH
+    - name: falcon-train-model
+      hostPath:
+        path: HOST_MODEL_PATH
+    - name: falcon-processed-data
+      hostPath:
+        path: HOST_DATA_OUTPUT

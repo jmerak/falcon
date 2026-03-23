@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: MASTER_NAME
+spec:
+  type: NodePort
+  ports:
+    - port: MASTER_CLUSTER_PORT  #这里port集群内部clusterIP 对应的端口
+      targetPort: MASTER_TARGET_PORT  #这里是pod监听的端口， port和nodePort的流量最后都会到这里
+      nodePort: MASTER_NODE_PORT  #这里是物理机的端口
+  selector:
+    app: MASTER_NAME
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: MASTER_NAME
+  labels:
+    app: MASTER_NAME
+spec:
+  restartPolicy: Never
+  containers:
+    - image: FALCON_MASTER_IMAGE
+      name: MASTER_NAME
+      imagePullPolicy: IfNotPresent
+      envFrom:
+      - configMapRef: # must specify one of: `configMapRef` or `secretRef`
+          name: redis-envs
+      env:
+        - name: ITEM_KEY
+          value: "ITEM_KEY_PLACEHOLDER"  # must have ""
+        - name: EXECUTOR_TYPE
+          value: "EXECUTOR_TYPE_PLACEHOLDER"
+        - name: SERVICE_NAME
+          value: "SERVICE_NAME_PLACEHOLDER"
+        - name: COORD_SVC_NAME
+          value: "COORD_SVC_NAME_PLACEHOLDER"
+        - name: MASTER_ADDR
+          value: "MASTER_ADDR_PLACEHOLDER"
+        - name: COORD_TARGET_PORT
+          value: "COORD_TARGET_PORT_PLACEHOLDER"
+        - name: Env
+          value: "Env_PLACEHOLDER"
+        - name: EXECUTOR_NAME
+          value: "MASTER_NAME"
+      ports:
+        - containerPort: MASTER_TARGET_PORT  #这里containerPort是容器内部的port
+          name: "port-MASTER_TARGET_PORT"
+      volumeMounts:
+        - name: coord-storage
+          mountPath: go/logs
+  volumes:
+    - name: coord-storage
+      persistentVolumeClaim:
+        claimName: STORAGE_NAME-pvc
+
+

@@ -1,0 +1,155 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Others
+.idea/*.xml
+.idea/
+.DS_Store
+examples/.DS_Store
+examples/fraud_detection/.DS_Store
+build/
+src/cmake-build-debug/
+build1/
+log/
+cmake-build-debug/
+third_party/MP-SPDZ/
+third_party/libhcs/
+
+##############
+# data folder
+##############
+data/dataset/bank_marketing_data/client0/phe_keys
+data/dataset/bank_marketing_data/client1/phe_keys
+data/dataset/bank_marketing_data/client2/phe_keys
+
+data/dataset/bank_marketing_data/client0/saved_model.pb
+data/dataset/bank_marketing_data/client1/saved_model.pb
+data/dataset/bank_marketing_data/client2/saved_model.pb
+
+data/dataset/bank_marketing_data/client0/report.txt
+data/dataset/bank_marketing_data/client1/report.txt
+data/dataset/bank_marketing_data/client2/report.txt
+
+data/dataset/breast_cancer_data/client0/phe_keys
+data/dataset/breast_cancer_data/client1/phe_keys
+data/dataset/breast_cancer_data/client2/phe_keys
+
+data/dataset/breast_cancer_data/client0/report.txt
+data/dataset/breast_cancer_data/client1/report.txt
+data/dataset/breast_cancer_data/client2/report.txt
+
+data/dataset/energy_prediction_data/client0/phe_keys
+data/dataset/energy_prediction_data/client1/phe_keys
+data/dataset/energy_prediction_data/client2/phe_keys
+
+data/dataset/energy_prediction_data/client0/report.txt
+data/dataset/energy_prediction_data/client1/report.txt
+data/dataset/energy_prediction_data/client2/report.txt
+
+##############
+# gtest folder
+##############
+test/falcon/io/*
+!test/falcon/io/.gitkeep
+
+# falcon_platform dependencies
+pkg/*
+
+##################
+# python related
+##################
+*.pyc
+*.so
+*.pyd
+.cache
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# IPython Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# mypy
+.mypy_cache
+
+# celery beat schedule file
+celerybeat-schedule
+
+# dotenv
+.env
+
+# virtualenv
+venv/
+ENV/
+
+# Spyder project settings
+.spyderproject
+
+# Rope project settings
+.ropeproject
+
+# generated proto message
+src/executor/include/message/*.cc
+src/executor/include/message/*.h
+
+tools/ml_baseline/python/linearreg_sklearn/mlscratch/
+
+src/falcon_platform/falcon_logs*
+falcon_logs*
+experiments/
+src/falcon_platform/examples/train_job_dsls/sigmod_experiments/
+
+# ignore trained pb file
+*.pb
+
+2022sigmod-exp/3party/party0/data/synthetic_lime/
+2022sigmod-exp/3party/party1/data/synthetic_lime/
+2022sigmod-exp/3party/party2/data/synthetic_lime/
+2022sigmod-exp/3party/party0/data/synthetic_train/
+2022sigmod-exp/3party/party1/data/synthetic_train/
+2022sigmod-exp/3party/party2/data/synthetic_train/
+
+
+data/dataset/breast_cancer_data/client0/log_reg/
+data/dataset/breast_cancer_data/client1/log_reg/
+data/dataset/breast_cancer_data/client2/log_reg/

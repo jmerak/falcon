@@ -1,0 +1,41 @@
+#!/bin/bash
+
+. ./deploy/property/svc.properties
+
+MASTER_NAME=$1
+MASTER_TARGET_PORT=$2
+ITEM_KEY_PLACEHOLDER=$3
+EXECUTOR_TYPE_PLACEHOLDER=$4
+MASTER_ADDR_PLACEHOLDER=$5
+SERVICE_NAME_PLACEHOLDER=$6
+COORD_SVC_NAME_PLACEHOLDER=$7
+Env_PLACEHOLDER=$8
+
+echo "$MASTER_NAME"
+echo "$MASTER_TARGET_PORT"
+echo "$ITEMKEY"
+echo "$EXECUTOR_TYPE"
+echo "$MASTER_ADDR_PLACEHOLDER"
+
+IMAGE=$(echo "$FALCON_COORD_IMAGE" | sed 's_/_\\/_g')
+
+# create new yaml according template
+MASTER_YAML=./deploy/template/$MASTER_NAME.yaml
+cp ./deploy/template/runtime_master.yaml.template $MASTER_YAML || exit 1
+
+
+# replace var in common yaml with customer defined variables
+
+sed -i -e "s/MASTER_NAME/$MASTER_NAME/g" $MASTER_YAML || exit 1
+sed -i -e "s/EXECUTOR_TYPE_PLACEHOLDER/$EXECUTOR_TYPE_PLACEHOLDER/g" $MASTER_YAML || exit 1
+sed -i -e "s/MASTER_CLUSTER_PORT/$MASTER_TARGET_PORT/g" $MASTER_YAML || exit 1
+sed -i -e "s/MASTER_TARGET_PORT/$MASTER_TARGET_PORT/g" $MASTER_YAML || exit 1
+sed -i -e "s/MASTER_NODE_PORT/$MASTER_TARGET_PORT/g" $MASTER_YAML || exit 1
+sed -i -e "s/FALCON_MASTER_IMAGE/$IMAGE/g" $MASTER_YAML || exit 1
+sed -i -e "s/ITEM_KEY_PLACEHOLDER/$ITEM_KEY_PLACEHOLDER/g" $MASTER_YAML || exit 1
+sed -i -e "s/MASTER_ADDR_PLACEHOLDER/$MASTER_ADDR_PLACEHOLDER/g" $MASTER_YAML || exit 1
+sed -i -e "s/STORAGE_NAME/$COORD_STORAGE/g" $MASTER_YAML || exit 1
+sed -i -e "s/SERVICE_NAME_PLACEHOLDER/$SERVICE_NAME_PLACEHOLDER/g" $MASTER_YAML || exit 1
+sed -i -e "s/COORD_SVC_NAME_PLACEHOLDER/$COORD_SVC_NAME_PLACEHOLDER/g" $MASTER_YAML || exit 1
+sed -i -e "s/COORD_TARGET_PORT_PLACEHOLDER/$COORD_NODE_PORT/g" $MASTER_YAML || exit 1
+sed -i -e "s/Env_PLACEHOLDER/$Env_PLACEHOLDER/g" $MASTER_YAML || exit 1

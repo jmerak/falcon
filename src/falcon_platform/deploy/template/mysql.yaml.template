@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: MYSQL_SERVICE_NAME
+spec:
+  type: NodePort
+  ports:
+    - port: MYSQL_CLUSTER_PORT  #这里port集群内部clusterIP 对应的端口
+      targetPort: MYSQL_TARGET_PORT  #这里是pod监听的端口， port和nodePort的流量最后都会到这里
+      nodePort: MYSQL_NODE_PORT  #这里是物理机的端口
+  selector:
+    app: mysql
+  # clusterIP: None # None使服务DNS名称直接解析为Pod的IP地址。当您仅在service后面只有一个Pod，并且不打算增加Pod的数量时，这是最佳选择
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - image: MYSQL_IMAGE
+          name: mysql
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: root
+          ports:
+            - containerPort: 3306  #这里containerPort是容器内部的port
+              name: mysql
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+            - name: mysql-initdb
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: mysql-pv-claim
+        - name: mysql-initdb
+          configMap:
+            name: mysql-initdb-config
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: falcon-mysql
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: PV_DB_STORAGE_PATH
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim  #Claims use the same conventions as volumes when requesting storage with specific access modes.
+spec:
+  storageClassName: falcon-mysql
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+        storage: 10Gi

@@ -1,0 +1,35 @@
+# Golang giignore
+# Binaries for prograjobDB and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+falcon_platform
+coordinator_server
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+
+# sqlite3 db
+falcon.db
+
+# falcon_logs
+# .falcon_logs
+#falcon_logs/*
+# falcon_logs_notes/
+*.pid
+.logs/*
+
+# git check go.sum and go.mod
+# reference: https://github.com/golang/go/wiki/Modules#should-i-commit-my-gosum-file-as-well-as-my-gomod-file
+go.mod
+go.sum
+
+# frontend
+!web/build/

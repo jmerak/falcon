@@ -1,0 +1,152 @@
+syntax = "proto3";
+
+package com.nus.dbsytem.falcon.v0;
+option go_package = "/v0";
+
+// This message denotes the logistic regression parameters
+message LogisticRegressionParams {
+    // batch size in each iteration
+    int32 batch_size = 1;
+    // maximum number of iterations for training
+    int32 max_iteration = 2;
+    // tolerance of convergence
+    double converge_threshold = 3;
+    // whether use regularization or not
+    bool with_regularization = 4;
+    // regularization parameter
+    double alpha = 5;
+    // learning rate for parameter updating
+    double learning_rate = 6;
+    // decay rate for learning rate, following lr = lr0 / (1 + decay*t), t is #iteration
+    double decay = 7;
+    // penalty method used, 'l1' or 'l2', default l2, currently support 'l2'
+    string penalty = 8;
+    // optimization method, default 'sgd', currently support 'sgd'
+    string optimizer = 9;
+    // strategy for handling multi-class classification, default 'ovr', currently support 'ovr'
+    string multi_class = 10;
+    // evaluation metric for training and testing, 'acc', 'auc', or 'ks', currently support 'acc'
+    string metric = 11;
+    // differential privacy budget
+    double differential_privacy_budget = 12;
+    // whether to fit the bias the term
+    bool fit_bias = 13;
+}
+
+// This message denotes the linear regression parameters
+message LinearRegressionParams {
+    // batch size in each iteration
+    int32 batch_size = 1;
+    // maximum number of iterations for training
+    int32 max_iteration = 2;
+    // tolerance of convergence
+    double converge_threshold = 3;
+    // whether use regularization or not
+    bool with_regularization = 4;
+    // regularization parameter
+    double alpha = 5;
+    // learning rate for parameter updating
+    double learning_rate = 6;
+    // decay rate for learning rate, following lr = lr0 / (1 + decay*t), t is #iteration
+    double decay = 7;
+    // penalty method used, 'l1' or 'l2', default l2, currently support 'l2'
+    string penalty = 8;
+    // optimization method, default 'sgd', currently support 'sgd'
+    string optimizer = 9;
+    // evaluation metric for training and testing, 'mse'
+    string metric = 10;
+    // differential privacy budget
+    double differential_privacy_budget = 11;
+    // whether to fit the bias the term
+    bool fit_bias = 12;
+}
+
+// This message denotes the decision tree builder parameters
+message DecisionTreeParams {
+    // type of the tree, 'classification' or 'regression'
+    string tree_type = 1;
+    // the function to measure the quality of a split 'gini' or 'entropy'
+    string criterion = 2;
+    // the strategy used to choose a split at each node, 'best' or 'random'
+    string split_strategy = 3;
+    // the number of classes in the dataset, if regression, set to 1
+    int32 class_num = 4;
+    // the maximum depth of the tree
+    int32 max_depth = 5;
+    // the maximum number of bins to split a feature
+    int32 max_bins = 6;
+    // the minimum number of samples required to split an internal node
+    int32 min_samples_split = 7;
+    // the minimum number of samples required to be at a leaf node
+    int32 min_samples_leaf = 8;
+    // the maximum number of leaf nodes
+    int32 max_leaf_nodes = 9;
+    // a node will be split if this split induces a decrease of impurity >= this value
+    double min_impurity_decrease = 10;
+    // threshold for early stopping in tree growth
+    double min_impurity_split = 11;
+    // differential privacy (DP) budget, 0 denotes not use DP
+    double dp_budget = 12;
+}
+
+// This message denotes the random forest builder parameters
+message RandomForestParams {
+    // number of trees in the forest
+    int32 n_estimator = 1;
+    // sample rate for each tree in the forest
+    double sample_rate = 2;
+    // decision tree builder params
+    DecisionTreeParams dt_param = 3;
+}
+
+// This message denotes the gradient boosting decision tree builder parameters
+message GbdtParams {
+    // number of estimators (note that the number of total trees in the model
+    // does not necessarily equal to the number of estimators for classification)
+    int32 n_estimator = 1;
+    // loss function to be optimized
+    string loss = 2;
+    // learning rate shrinks the contribution of each tree
+    double learning_rate = 3;
+    // the fraction of samples to be used for fitting individual base learners
+    // default 1.0, reserved here for future usage
+    double subsample = 4;
+    // decision tree builder params (note that the tree type here may be changed
+    // when building the gbdt model as they are all regression trees in gbdt)
+    DecisionTreeParams dt_param = 5;
+}
+
+// This message denotes the multi-layer perceptron builder parameters
+message MlpParams {
+    // whether classification or regression
+    bool is_classification = 1;
+    // size of mini-batch in each iteration
+    int32 batch_size = 2;
+    // maximum number of iterations for training
+    int32 max_iteration = 3;
+    // tolerance of convergence
+    double converge_threshold = 4;
+    // whether use regularization or not
+    bool with_regularization = 5;
+    // regularization parameter
+    double alpha = 6;
+    // learning rate for parameter updating
+    double learning_rate = 7;
+    // decay rate for learning rate, following lr = lr0 / (1 + decay*t),
+    // t is #iteration
+    double decay = 8;
+    // penalty method used, 'l1' or 'l2', default l2, currently support 'l2'
+    string penalty = 9;
+    // optimization method, default 'sgd', currently support 'sgd'
+    string optimizer = 10;
+    // evaluation metric for training and testing, 'mse'
+    string metric = 11;
+    // differential privacy (DP) budget, 0 denotes not use DP
+    double dp_budget = 12;
+    // whether to fit the bias term
+    bool fit_bias = 13;
+    // the number of neurons in each layer
+    repeated int32 num_layers_outputs = 14;
+    // the vector of layers activation functions
+    repeated string layers_activation_funcs = 15;
+}
