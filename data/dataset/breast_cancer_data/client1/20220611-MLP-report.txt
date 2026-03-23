@@ -1,0 +1,7 @@
+
+-------- Communication Statistics (Party 1) --------
+  Channel[1 <-> 0]: sent 1478090 bytes (2596 ops), recv 2276511 bytes (2818 ops)
+  Channel[1 <-> 2]: sent 0 bytes (0 ops), recv 0 bytes (0 ops)
+  Total: sent 1478090 bytes (2596 ops), recv 2276511 bytes (2818 ops)
+  Total transferred: 3754601 bytes
+-------- End Communication Statistics --------
