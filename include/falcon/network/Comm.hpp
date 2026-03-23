@@ -136,9 +136,11 @@ public:
 	virtual void writeWithSize(string s) { writeWithSize((const byte*)s.c_str(), s.size()); };
 	virtual ~CommParty() {};
 
-	// accumulate the number of send/receive bytes
+	// accumulate the number of send/receive bytes and operations
     long bytesIn = 0;
     long bytesOut = 0;
+    long sendCount = 0;
+    long recvCount = 0;
 };
 
 class CommPartyTCPSynced : public CommParty {
@@ -158,6 +160,7 @@ public:
     size_t write(const byte* data, int size, int peer = -1, int protocol = -1) override;
 	size_t read(byte* data, int sizeToRead, int peer = -1, int protocol = -1) override {
 	    bytesIn += sizeToRead;
+	    recvCount++;
 		return boost::asio::read(socketForRead(), boost::asio::buffer(data, sizeToRead));
 	}
 

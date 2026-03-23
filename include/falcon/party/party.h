@@ -231,6 +231,13 @@ public:
   void getter_phe_auth_server(djcs_t_auth_server *g_phe_auth_server) const {
     djcs_t_auth_server_copy(phe_auth_server, g_phe_auth_server);
   }
+
+  /**
+   * log and save communication statistics to report file
+   *
+   * @param report_file: path to the model report file (append mode)
+   */
+  void log_communication_stats(const std::string &report_file) const;
 };
 
 #endif // FALCON_SRC_EXECUTOR_PARTY_PARTY_H_

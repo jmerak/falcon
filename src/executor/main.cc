@@ -231,6 +231,7 @@ int main(int argc, char *argv[]) {
           break;
         }
         log_info("-------- Finish algorithm --------");
+        party.log_communication_stats(model_report_file);
       }
     }
 
@@ -313,6 +314,7 @@ int main(int argc, char *argv[]) {
         }
       }
       log_info("Parameter Server are running");
+      party.log_communication_stats(model_report_file);
     }
 
     // if distributed train or inference, and distributed_role = worker
@@ -439,6 +441,7 @@ int main(int argc, char *argv[]) {
           log_info("Finish distributed training algorithm");
         }
         log_info("Finish distributed training algorithm");
+        party.log_communication_stats(model_report_file);
       }
     }
 

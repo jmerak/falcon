@@ -112,6 +112,7 @@ void CommPartyTCPSynced::setSocketOptions() {
 size_t CommPartyTCPSynced::write(const byte* data, int size, int peer, int protocol) {
   boost::system::error_code ec;
   bytesOut += size;
+  sendCount++;
   return boost::asio::write(socketForWrite(),
                             boost::asio::buffer(data, size),
                             boost::asio::transfer_all(), ec);

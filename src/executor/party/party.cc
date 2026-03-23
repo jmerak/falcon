@@ -449,3 +449,45 @@ Party::~Party() {
   djcs_t_free_public_key(phe_pub_key);
   djcs_t_free_auth_server(phe_auth_server);
 }
+
+void Party::log_communication_stats(const std::string &report_file) const {
+  long totalBytesIn = 0, totalBytesOut = 0;
+  long totalSendCount = 0, totalRecvCount = 0;
+
+  std::ostringstream oss;
+  oss << "\n-------- Communication Statistics (Party "
+      << party_id << ") --------\n";
+
+  for (int i = 0; i < party_num; i++) {
+    if (i == party_id || channels[i] == nullptr) continue;
+    long chBytesIn = channels[i]->bytesIn;
+    long chBytesOut = channels[i]->bytesOut;
+    long chSendCount = channels[i]->sendCount;
+    long chRecvCount = channels[i]->recvCount;
+    totalBytesIn += chBytesIn;
+    totalBytesOut += chBytesOut;
+    totalSendCount += chSendCount;
+    totalRecvCount += chRecvCount;
+    oss << "  Channel[" << party_id << " <-> " << i << "]: "
+        << "sent " << chBytesOut << " bytes (" << chSendCount << " ops), "
+        << "recv " << chBytesIn << " bytes (" << chRecvCount << " ops)\n";
+  }
+  oss << "  Total: sent " << totalBytesOut << " bytes (" << totalSendCount
+      << " ops), recv " << totalBytesIn << " bytes (" << totalRecvCount
+      << " ops)\n";
+  oss << "  Total transferred: " << (totalBytesIn + totalBytesOut)
+      << " bytes\n";
+  oss << "-------- End Communication Statistics --------\n";
+
+  std::string stats_str = oss.str();
+  log_info(stats_str);
+
+  if (!report_file.empty()) {
+    std::ofstream report;
+    report.open(report_file, std::ios_base::app);
+    if (report.is_open()) {
+      report << stats_str;
+      report.close();
+    }
+  }
+}
