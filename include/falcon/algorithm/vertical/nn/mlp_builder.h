@@ -115,9 +115,12 @@ public:
   MlpModel mlp_model;
 
   // accumulated training phase statistics
+  PhaseStats stats_init_weights;   // weight init + feature-count sync
+  PhaseStats stats_batch_sync;     // batch index synchronisation (all iters)
   PhaseStats stats_forward;
   PhaseStats stats_backward;
   PhaseStats stats_dp_clip;
+  PhaseStats stats_eval;           // evaluation phase
   double total_training_time_sec = 0.0;
 
 public:

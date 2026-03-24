@@ -1051,6 +1051,8 @@ void MlpBuilder::write_training_stats(const std::string &report_path) const {
             << " bytes (" << (s.send_ops + s.recv_ops) << " ops)\n";
   };
 
+  write_phase("Weight Initialization", stats_init_weights);
+  write_phase("Batch Index Sync", stats_batch_sync);
   write_phase("Forward Propagation", stats_forward);
   write_phase("Backward Propagation", stats_backward);
   if (dp_clip_threshold > 0.0 && dp_noise_sigma > 0.0) {
@@ -1059,13 +1061,22 @@ void MlpBuilder::write_training_stats(const std::string &report_path) const {
     outfile << "  Clip threshold (C): " << dp_clip_threshold << "\n";
     outfile << "  Noise sigma: " << dp_noise_sigma << "\n";
   }
+  write_phase("Evaluation", stats_eval);
 
   // total comm across all phases
-  long total_sent = stats_forward.bytes_sent + stats_backward.bytes_sent;
-  long total_recv = stats_forward.bytes_recv + stats_backward.bytes_recv;
-  long total_sops = stats_forward.send_ops + stats_backward.send_ops;
-  long total_rops = stats_forward.recv_ops + stats_backward.recv_ops;
-  outfile << "\n[Total Training Communication]\n";
+  long total_sent = stats_init_weights.bytes_sent + stats_batch_sync.bytes_sent
+                  + stats_forward.bytes_sent + stats_backward.bytes_sent
+                  + stats_eval.bytes_sent;
+  long total_recv = stats_init_weights.bytes_recv + stats_batch_sync.bytes_recv
+                  + stats_forward.bytes_recv + stats_backward.bytes_recv
+                  + stats_eval.bytes_recv;
+  long total_sops = stats_init_weights.send_ops + stats_batch_sync.send_ops
+                  + stats_forward.send_ops + stats_backward.send_ops
+                  + stats_eval.send_ops;
+  long total_rops = stats_init_weights.recv_ops + stats_batch_sync.recv_ops
+                  + stats_forward.recv_ops + stats_backward.recv_ops
+                  + stats_eval.recv_ops;
+  outfile << "\n[Total Communication (All Phases)]\n";
   outfile << "  Sent: " << total_sent << " bytes (" << total_sops << " ops)\n";
   outfile << "  Recv: " << total_recv << " bytes (" << total_rops << " ops)\n";
   outfile << "  Total: " << (total_sent + total_recv) << " bytes ("
@@ -1184,11 +1195,25 @@ void MlpBuilder::train(Party party) {
   // step 1: init encrypted weights (here use precision for consistence in the
   // following)
   int n_features = party.getter_feature_num();
+  // -- snapshot before weight init --
+  struct timespec init_start;
+  clock_gettime(CLOCK_MONOTONIC, &init_start);
+  CommSnapshot comm_before_init = snapshot_comm(party);
+
   std::vector<int> sync_arr = sync_up_int_arr(party, n_features);
   int encry_weights_prec = PHE_FIXED_POINT_PRECISION;
   int plain_samples_prec = PHE_FIXED_POINT_PRECISION;
   init_encrypted_weights(party, encry_weights_prec);
   log_info("[train] init encrypted MLP weights success");
+
+  // -- accumulate weight-init phase stats --
+  struct timespec init_end;
+  clock_gettime(CLOCK_MONOTONIC, &init_end);
+  CommSnapshot comm_after_init = snapshot_comm(party);
+  stats_init_weights.time_sec +=
+      (double)(init_end.tv_sec - init_start.tv_sec) +
+      (double)(init_end.tv_nsec - init_start.tv_nsec) / 1000000000.0;
+  accumulate_comm(stats_init_weights, comm_before_init, comm_after_init);
 
   // record training data ids in data_indexes for iteratively batch selection
   std::vector<int> train_data_indexes;
@@ -1211,8 +1236,21 @@ void MlpBuilder::train(Party party) {
     clock_gettime(CLOCK_MONOTONIC, &iter_start);
 
     // select batch_index
+    struct timespec batch_sync_start;
+    clock_gettime(CLOCK_MONOTONIC, &batch_sync_start);
+    CommSnapshot comm_before_batch_sync = snapshot_comm(party);
+
     std::vector<int> batch_indexes =
         sync_batch_idx(party, batch_size, batch_iter_indexes[iter]);
+
+    struct timespec batch_sync_end;
+    clock_gettime(CLOCK_MONOTONIC, &batch_sync_end);
+    CommSnapshot comm_after_batch_sync = snapshot_comm(party);
+    stats_batch_sync.time_sec +=
+        (double)(batch_sync_end.tv_sec - batch_sync_start.tv_sec) +
+        (double)(batch_sync_end.tv_nsec - batch_sync_start.tv_nsec) / 1000000000.0;
+    accumulate_comm(stats_batch_sync, comm_before_batch_sync, comm_after_batch_sync);
+
     log_info("-------- Iteration " + std::to_string(iter) +
              ", select_batch_idx success --------");
     //    for (int i = 0; i < batch_indexes.size(); i++) {
@@ -1527,6 +1565,8 @@ void MlpBuilder::eval(Party party, falcon::DatasetType eval_type,
            " Start *************");
   struct timespec start;
   clock_gettime(CLOCK_MONOTONIC, &start);
+  // snapshot comm before eval
+  CommSnapshot comm_before_eval = snapshot_comm(party);
   // the testing workflow is as follows:
   //     step 1: init test data
   //     step 2: the parties call the model.predict function to compute
@@ -1644,6 +1684,12 @@ void MlpBuilder::eval(Party party, falcon::DatasetType eval_type,
   clock_gettime(CLOCK_MONOTONIC, &finish);
   double consumed_time = (double)(finish.tv_sec - start.tv_sec);
   consumed_time += (double)(finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+
+  // accumulate eval phase stats
+  CommSnapshot comm_after_eval = snapshot_comm(party);
+  stats_eval.time_sec += consumed_time;
+  accumulate_comm(stats_eval, comm_before_eval, comm_after_eval);
+
   log_info("Evaluation time = " + std::to_string(consumed_time));
   log_info("************* Evaluation on " + dataset_str +
            " Finished *************");

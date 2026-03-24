@@ -1,30 +1,48 @@
 
 -------- Training Phase Statistics --------
-Total training time: 29.509311 sec
+Total training time: 32.190835 sec
 Number of iterations: 10
 Batch size: 8
 
+[Weight Initialization]
+  Time: 0.014467 sec
+  Comm sent: 6 bytes (2 ops)
+  Comm recv: 31428 bytes (4 ops)
+  Comm total: 31434 bytes (6 ops)
+
+[Batch Index Sync]
+  Time: 0.000124 sec
+  Comm sent: 0 bytes (0 ops)
+  Comm recv: 192 bytes (20 ops)
+  Comm total: 192 bytes (20 ops)
+
 [Forward Propagation]
-  Time: 18.368187 sec
-  Comm sent: 386334 bytes (840 ops)
-  Comm recv: 365044 bytes (860 ops)
-  Comm total: 751378 bytes (1700 ops)
+  Time: 20.084649 sec
+  Comm sent: 386353 bytes (840 ops)
+  Comm recv: 365037 bytes (860 ops)
+  Comm total: 751390 bytes (1700 ops)
 
 [Backward Propagation]
-  Time: 11.124933 sec
-  Comm sent: 432097 bytes (604 ops)
-  Comm recv: 1213203 bytes (776 ops)
-  Comm total: 1645300 bytes (1380 ops)
+  Time: 12.089390 sec
+  Comm sent: 432101 bytes (604 ops)
+  Comm recv: 1213213 bytes (776 ops)
+  Comm total: 1645314 bytes (1380 ops)
 
-[Total Training Communication]
-  Sent: 818431 bytes (1444 ops)
-  Recv: 1578247 bytes (1636 ops)
-  Total: 2396678 bytes (3080 ops)
+[Evaluation]
+  Time: 17.558601 sec
+  Comm sent: 659618 bytes (1150 ops)
+  Comm recv: 665656 bytes (1156 ops)
+  Comm total: 1325274 bytes (2306 ops)
+
+[Total Communication (All Phases)]
+  Sent: 1478078 bytes (2596 ops)
+  Recv: 2275526 bytes (2816 ops)
+  Total: 3753604 bytes (5412 ops)
 -------- End Training Phase Statistics --------
 
 -------- Communication Statistics (Party 2) --------
-  Channel[2 <-> 0]: sent 1478058 bytes (2596 ops), recv 2276533 bytes (2818 ops)
+  Channel[2 <-> 0]: sent 1478078 bytes (2596 ops), recv 2276543 bytes (2818 ops)
   Channel[2 <-> 1]: sent 0 bytes (0 ops), recv 0 bytes (0 ops)
-  Total: sent 1478058 bytes (2596 ops), recv 2276533 bytes (2818 ops)
-  Total transferred: 3754591 bytes
+  Total: sent 1478078 bytes (2596 ops), recv 2276543 bytes (2818 ops)
+  Total transferred: 3754621 bytes
 -------- End Communication Statistics --------
