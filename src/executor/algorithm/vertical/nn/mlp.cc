@@ -27,6 +27,7 @@ SOFTWARE.
 //
 
 #include <falcon/algorithm/model_builder_helper.h>
+#include <falcon/algorithm/vertical/nn/dp_clip.h>
 #include <falcon/algorithm/vertical/nn/mlp.h>
 #include <falcon/operator/conversion/op_conv.h>
 #include <falcon/party/info_exchange.h>
@@ -40,6 +41,8 @@ MlpModel::MlpModel() {
   m_num_inputs = 0;
   m_num_outputs = 0;
   m_num_hidden_layers = 0;
+  dp_clip_threshold = 0.0;
+  dp_noise_sigma = 0.0;
 }
 
 MlpModel::MlpModel(bool is_classification, bool with_bias,
@@ -76,6 +79,8 @@ MlpModel::MlpModel(const MlpModel &mlp_model) {
   m_layers_num_outputs = mlp_model.m_layers_num_outputs;
   m_layers = mlp_model.m_layers;
   m_n_layers = mlp_model.m_n_layers;
+  dp_clip_threshold = mlp_model.dp_clip_threshold;
+  dp_noise_sigma = mlp_model.dp_noise_sigma;
 }
 
 MlpModel &MlpModel::operator=(const MlpModel &mlp_model) {
@@ -86,6 +91,8 @@ MlpModel &MlpModel::operator=(const MlpModel &mlp_model) {
   m_layers_num_outputs = mlp_model.m_layers_num_outputs;
   m_layers = mlp_model.m_layers;
   m_n_layers = mlp_model.m_n_layers;
+  dp_clip_threshold = mlp_model.dp_clip_threshold;
+  dp_noise_sigma = mlp_model.dp_noise_sigma;
 }
 
 MlpModel::~MlpModel() {
@@ -326,9 +333,65 @@ void MlpModel::forward_computation(const Party &party, int cur_batch_size,
           party, cur_batch_size, local_weight_sizes, encoded_batch_samples,
           cur_layer_num_outputs, cur_layer_enc_outputs);
 
-      //      log_info("[forward_computation] display cur_layer_enc_outputs for
-      //      debug"); display_encrypted_matrix(party, cur_batch_size,
-      //      cur_layer_num_outputs, cur_layer_enc_outputs);
+      // Π_DPClip: if DP is enabled (dp_noise_sigma > 0), apply per-sample L2
+      // clipping and Gaussian noise injection to the layer-0 aggregated output
+      // before the standard C2S → SPDZ-Activation step.
+      if (dp_noise_sigma > 0.0) {
+        log_info("[forward_computation] Applying Π_DPClip at layer 0: "
+                 "clip_threshold=" + std::to_string(dp_clip_threshold) +
+                 " noise_sigma=" + std::to_string(dp_noise_sigma));
+
+        // snapshot comm and time before DP clip
+        struct timespec dp_start;
+        clock_gettime(CLOCK_MONOTONIC, &dp_start);
+        long dp_bytes_sent_before = 0, dp_bytes_recv_before = 0;
+        long dp_sops_before = 0, dp_rops_before = 0;
+        for (int pi = 0; pi < party.party_num; pi++) {
+          if (pi == party.party_id || party.channels[pi] == nullptr) continue;
+          dp_bytes_sent_before += party.channels[pi]->bytesOut;
+          dp_bytes_recv_before += party.channels[pi]->bytesIn;
+          dp_sops_before += party.channels[pi]->sendCount;
+          dp_rops_before += party.channels[pi]->recvCount;
+        }
+
+        auto **dp_res = new EncodedNumber *[cur_batch_size];
+        for (int i = 0; i < cur_batch_size; i++) {
+          dp_res[i] = new EncodedNumber[cur_layer_num_outputs];
+        }
+        dp_clip_layer0_outputs(party, cur_layer_enc_outputs, dp_res,
+                               cur_batch_size, cur_layer_num_outputs,
+                               dp_clip_threshold, dp_noise_sigma);
+        for (int i = 0; i < cur_batch_size; i++) {
+          for (int j = 0; j < cur_layer_num_outputs; j++) {
+            cur_layer_enc_outputs[i][j] = dp_res[i][j];
+          }
+          delete[] dp_res[i];
+        }
+        delete[] dp_res;
+
+        // snapshot comm and time after DP clip
+        struct timespec dp_finish;
+        clock_gettime(CLOCK_MONOTONIC, &dp_finish);
+        double dp_elapsed = (double)(dp_finish.tv_sec - dp_start.tv_sec) +
+            (double)(dp_finish.tv_nsec - dp_start.tv_nsec) / 1000000000.0;
+        dp_clip_time_sec += dp_elapsed;
+        long dp_bytes_sent_after = 0, dp_bytes_recv_after = 0;
+        long dp_sops_after = 0, dp_rops_after = 0;
+        for (int pi = 0; pi < party.party_num; pi++) {
+          if (pi == party.party_id || party.channels[pi] == nullptr) continue;
+          dp_bytes_sent_after += party.channels[pi]->bytesOut;
+          dp_bytes_recv_after += party.channels[pi]->bytesIn;
+          dp_sops_after += party.channels[pi]->sendCount;
+          dp_rops_after += party.channels[pi]->recvCount;
+        }
+        dp_clip_bytes_sent += (dp_bytes_sent_after - dp_bytes_sent_before);
+        dp_clip_bytes_recv += (dp_bytes_recv_after - dp_bytes_recv_before);
+        dp_clip_send_ops += (dp_sops_after - dp_sops_before);
+        dp_clip_recv_ops += (dp_rops_after - dp_rops_before);
+
+        log_info("[forward_computation] Π_DPClip applied, time=" +
+                 std::to_string(dp_elapsed) + "s");
+      }
     } else {
       // for other layers, the layer inputs are secret shares, so use another
       // way to aggregate compute the encrypted aggregation for each neuron in
@@ -734,6 +797,16 @@ void spdz_mlp_computation(int party_num, int party_id,
     log_info(
         "[spdz_mlp_computation] SPDZ mlp computation activation fast returned");
     // suppose the activation shares are returned
+    std::vector<double> return_values =
+        receive_result(mpc_sockets, party_num, private_value_size);
+    res->set_value(return_values);
+    break;
+  }
+  case falcon::DP_CLIP_L2: {
+    log_info("[spdz_mlp_computation] SPDZ DP_CLIP_L2: "
+             "receiving clipped shares (same size as input)");
+    // The SPDZ program returns per-sample clipped shares;
+    // output dimension equals input (batch_size * n_outputs values).
     std::vector<double> return_values =
         receive_result(mpc_sockets, party_num, private_value_size);
     res->set_value(return_values);

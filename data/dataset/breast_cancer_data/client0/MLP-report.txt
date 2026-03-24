@@ -1,0 +1,48 @@
+******** Evaluation Report on testing dataset ********
+Confusion Matrix (Class 1 is Positive Class)
+               Pred
+               Class1    Class0
+True Class1    74        0
+     Class0    40        0
+=== Classification Report ===
+False negative (FN) = 0
+False positive (FP) = 40
+True positive (TP) = 74
+True negative (TN) = 0
+regular_accuracy = 0.64912280701754388
+balanced_accuracy = 0.5
+sensitivity = 1
+specificity = 0
+precision (PPV) = 0.64912280701754388
+NPV = -nan
+F1 score = 0.78723404255319152
+
+-------- Training Phase Statistics --------
+Total training time: 29.971610 sec
+Number of iterations: 10
+Batch size: 8
+
+[Forward Propagation]
+  Time: 19.358971 sec
+  Comm sent: 730088 bytes (1720 ops)
+  Comm recv: 772698 bytes (1680 ops)
+  Comm total: 1502786 bytes (3400 ops)
+
+[Backward Propagation]
+  Time: 10.093645 sec
+  Comm sent: 2426406 bytes (1552 ops)
+  Comm recv: 864217 bytes (1208 ops)
+  Comm total: 3290623 bytes (2760 ops)
+
+[Total Training Communication]
+  Sent: 3156494 bytes (3272 ops)
+  Recv: 1636915 bytes (2888 ops)
+  Total: 4793409 bytes (6160 ops)
+-------- End Training Phase Statistics --------
+
+-------- Communication Statistics (Party 0) --------
+  Channel[0 <-> 1]: sent 2276533 bytes (2818 ops), recv 1478105 bytes (2596 ops)
+  Channel[0 <-> 2]: sent 2276533 bytes (2818 ops), recv 1478058 bytes (2596 ops)
+  Total: sent 4553066 bytes (5636 ops), recv 2956163 bytes (5192 ops)
+  Total transferred: 7509229 bytes
+-------- End Communication Statistics --------

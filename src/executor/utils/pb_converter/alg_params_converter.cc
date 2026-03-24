@@ -312,6 +312,8 @@ void serialize_mlp_params(const MlpParams &mlp_params,
   pb_mlp_params.set_metric(mlp_params.metric);
   pb_mlp_params.set_dp_budget(mlp_params.dp_budget);
   pb_mlp_params.set_fit_bias(mlp_params.fit_bias);
+  pb_mlp_params.set_dp_clip_threshold(mlp_params.dp_clip_threshold);
+  pb_mlp_params.set_dp_noise_sigma(mlp_params.dp_noise_sigma);
   int layer_size = (int)mlp_params.num_layers_outputs.size();
   int hidden_layer_size = (int)mlp_params.layers_activation_funcs.size();
   for (int i = 0; i < layer_size; i++) {
@@ -345,6 +347,8 @@ void deserialize_mlp_params(MlpParams &mlp_params,
   mlp_params.metric = pb_mlp_params.metric();
   mlp_params.dp_budget = pb_mlp_params.dp_budget();
   mlp_params.fit_bias = pb_mlp_params.fit_bias();
+  mlp_params.dp_clip_threshold = pb_mlp_params.dp_clip_threshold();
+  mlp_params.dp_noise_sigma = pb_mlp_params.dp_noise_sigma();
   int layer_size = pb_mlp_params.num_layers_outputs_size();
   int hidden_layer_size = pb_mlp_params.layers_activation_funcs_size();
   for (int i = 0; i < layer_size; i++) {

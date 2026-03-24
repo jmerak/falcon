@@ -80,7 +80,7 @@ enum SpdzLimeCompType {
 };
 
 /** for MLP */
-enum SpdzMlpCompType { ACTIVATION, ACTIVATION_FAST };
+enum SpdzMlpCompType { ACTIVATION, ACTIVATION_FAST, DP_CLIP_L2 };
 
 enum SpdzMlpActivationFunc { LOGISTIC, RELU, IDENTITY, SOFTMAX };
 

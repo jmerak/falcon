@@ -78,11 +78,16 @@ MlpBuilder::MlpBuilder(const MlpParams &mlp_params,
   optimizer = mlp_params.optimizer;
   metric = mlp_params.metric;
   dp_budget = mlp_params.dp_budget;
+  dp_clip_threshold = mlp_params.dp_clip_threshold;
+  dp_noise_sigma = mlp_params.dp_noise_sigma;
   fit_bias = mlp_params.fit_bias;
   num_layers_outputs = mlp_params.num_layers_outputs;
   layers_activation_funcs = mlp_params.layers_activation_funcs;
   mlp_model = MlpModel(is_classification, fit_bias, num_layers_outputs,
                        layers_activation_funcs);
+  // propagate DP parameters into the model for forward_computation
+  mlp_model.dp_clip_threshold = dp_clip_threshold;
+  mlp_model.dp_noise_sigma = dp_noise_sigma;
 }
 
 MlpBuilder::MlpBuilder(const MlpBuilder &mlp_builder) {
@@ -104,6 +109,8 @@ MlpBuilder::MlpBuilder(const MlpBuilder &mlp_builder) {
   optimizer = mlp_builder.optimizer;
   metric = mlp_builder.metric;
   dp_budget = mlp_builder.dp_budget;
+  dp_clip_threshold = mlp_builder.dp_clip_threshold;
+  dp_noise_sigma = mlp_builder.dp_noise_sigma;
   fit_bias = mlp_builder.fit_bias;
   num_layers_outputs = mlp_builder.num_layers_outputs;
   layers_activation_funcs = mlp_builder.layers_activation_funcs;
@@ -129,6 +136,8 @@ MlpBuilder &MlpBuilder::operator=(const MlpBuilder &mlp_builder) {
   optimizer = mlp_builder.optimizer;
   metric = mlp_builder.metric;
   dp_budget = mlp_builder.dp_budget;
+  dp_clip_threshold = mlp_builder.dp_clip_threshold;
+  dp_noise_sigma = mlp_builder.dp_noise_sigma;
   fit_bias = mlp_builder.fit_bias;
   num_layers_outputs = mlp_builder.num_layers_outputs;
   layers_activation_funcs = mlp_builder.layers_activation_funcs;
@@ -998,6 +1007,74 @@ void MlpBuilder::post_proc_model_weights(const Party &party) {
   djcs_t_free_public_key(phe_pub_key);
 }
 
+CommSnapshot MlpBuilder::snapshot_comm(const Party &party) {
+  CommSnapshot snap;
+  for (int i = 0; i < party.party_num; i++) {
+    if (i == party.party_id || party.channels[i] == nullptr) continue;
+    snap.total_bytes_sent += party.channels[i]->bytesOut;
+    snap.total_bytes_recv += party.channels[i]->bytesIn;
+    snap.total_send_ops += party.channels[i]->sendCount;
+    snap.total_recv_ops += party.channels[i]->recvCount;
+  }
+  return snap;
+}
+
+void MlpBuilder::accumulate_comm(PhaseStats &stats,
+                                 const CommSnapshot &before,
+                                 const CommSnapshot &after) {
+  stats.bytes_sent += (after.total_bytes_sent - before.total_bytes_sent);
+  stats.bytes_recv += (after.total_bytes_recv - before.total_bytes_recv);
+  stats.send_ops += (after.total_send_ops - before.total_send_ops);
+  stats.recv_ops += (after.total_recv_ops - before.total_recv_ops);
+}
+
+void MlpBuilder::write_training_stats(const std::string &report_path) const {
+  if (report_path.empty()) return;
+  std::ofstream outfile(report_path, std::ios_base::app);
+  if (!outfile) return;
+
+  outfile << "\n-------- Training Phase Statistics --------\n";
+  outfile << "Total training time: " << std::setprecision(6) << std::fixed
+          << total_training_time_sec << " sec\n";
+  outfile << "Number of iterations: " << max_iteration << "\n";
+  outfile << "Batch size: " << batch_size << "\n";
+
+  auto write_phase = [&](const std::string &name, const PhaseStats &s) {
+    outfile << "\n[" << name << "]\n";
+    outfile << "  Time: " << std::setprecision(6) << std::fixed
+            << s.time_sec << " sec\n";
+    outfile << "  Comm sent: " << s.bytes_sent << " bytes ("
+            << s.send_ops << " ops)\n";
+    outfile << "  Comm recv: " << s.bytes_recv << " bytes ("
+            << s.recv_ops << " ops)\n";
+    outfile << "  Comm total: " << (s.bytes_sent + s.bytes_recv)
+            << " bytes (" << (s.send_ops + s.recv_ops) << " ops)\n";
+  };
+
+  write_phase("Forward Propagation", stats_forward);
+  write_phase("Backward Propagation", stats_backward);
+  if (dp_clip_threshold > 0.0 && dp_noise_sigma > 0.0) {
+    write_phase("DP Clipping & Noise (included in Forward)", stats_dp_clip);
+    outfile << "\n[DP Parameters]\n";
+    outfile << "  Clip threshold (C): " << dp_clip_threshold << "\n";
+    outfile << "  Noise sigma: " << dp_noise_sigma << "\n";
+  }
+
+  // total comm across all phases
+  long total_sent = stats_forward.bytes_sent + stats_backward.bytes_sent;
+  long total_recv = stats_forward.bytes_recv + stats_backward.bytes_recv;
+  long total_sops = stats_forward.send_ops + stats_backward.send_ops;
+  long total_rops = stats_forward.recv_ops + stats_backward.recv_ops;
+  outfile << "\n[Total Training Communication]\n";
+  outfile << "  Sent: " << total_sent << " bytes (" << total_sops << " ops)\n";
+  outfile << "  Recv: " << total_recv << " bytes (" << total_rops << " ops)\n";
+  outfile << "  Total: " << (total_sent + total_recv) << " bytes ("
+          << (total_sops + total_rops) << " ops)\n";
+
+  outfile << "-------- End Training Phase Statistics --------\n";
+  outfile.close();
+}
+
 void MlpBuilder::train(Party party) {
   /// The training stage consists of the following steps
   /// 1. init encrypted weights, here we assume that the parties share the
@@ -1189,6 +1266,10 @@ void MlpBuilder::train(Party party) {
              "-th "
              "iteration init time = " +
              std::to_string(iter_init_consumed_time));
+
+    // snapshot comm before forward
+    CommSnapshot comm_before_forward = snapshot_comm(party);
+
     mlp_model.forward_computation(party, cur_sample_size, sync_arr,
                                   encoded_batch_samples, predicted_labels,
                                   layer_activation_shares,
@@ -1209,6 +1290,14 @@ void MlpBuilder::train(Party party) {
              "iteration forward consumed time = " +
              std::to_string(iter_forward_consumed_time));
 
+    // accumulate forward phase stats
+    CommSnapshot comm_after_forward = snapshot_comm(party);
+    stats_forward.time_sec += iter_forward_consumed_time;
+    accumulate_comm(stats_forward, comm_before_forward, comm_after_forward);
+
+    // snapshot comm before backward
+    CommSnapshot comm_before_backward = snapshot_comm(party);
+
     // step 2.5: backward propagation and update weights
     backward_computation(party, batch_samples, predicted_labels, batch_indexes,
                          sync_arr, encry_agg_precision, layer_activation_shares,
@@ -1227,6 +1316,11 @@ void MlpBuilder::train(Party party) {
              "-th "
              "iteration backward time = " +
              std::to_string(iter_backward_time));
+
+    // accumulate backward phase stats
+    CommSnapshot comm_after_backward = snapshot_comm(party);
+    stats_backward.time_sec += iter_backward_time;
+    accumulate_comm(stats_backward, comm_before_backward, comm_after_backward);
 
     double iter_consumed_time =
         (double)(iter_finish.tv_sec - iter_start.tv_sec);
@@ -1252,6 +1346,15 @@ void MlpBuilder::train(Party party) {
   clock_gettime(CLOCK_MONOTONIC, &finish);
   double consumed_time = (double)(finish.tv_sec - start.tv_sec);
   consumed_time += (double)(finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+  total_training_time_sec = consumed_time;
+
+  // copy DP clip stats from model (accumulated during forward_computation)
+  stats_dp_clip.time_sec = mlp_model.dp_clip_time_sec;
+  stats_dp_clip.bytes_sent = mlp_model.dp_clip_bytes_sent;
+  stats_dp_clip.bytes_recv = mlp_model.dp_clip_bytes_recv;
+  stats_dp_clip.send_ops = mlp_model.dp_clip_send_ops;
+  stats_dp_clip.recv_ops = mlp_model.dp_clip_recv_ops;
+
   log_info("Training time = " + std::to_string(consumed_time));
   log_info("************* Training Finished *************");
 }
@@ -1467,46 +1570,67 @@ void MlpBuilder::eval(Party party, falcon::DatasetType eval_type,
       predictions.push_back(x);
     }
 
-    // compute accuracy
+    // compute metrics
     if (is_classification) {
-      int correct_num = 0;
+      // convert predictions to integer class labels
+      std::vector<int> pred_classes;
       for (int i = 0; i < dataset_size; i++) {
-        //        log_info("[mlp_builder.eval] predictions[" + std::to_string(i)
-        //        + "] = "
-        //          + std::to_string(predictions[i]) + ",
-        //          cur_test_dataset_labels["
-        //          + std::to_string(i) + "] = " +
-        //          std::to_string(cur_test_dataset_labels[i]));
-        if (predictions[i] == cur_test_dataset_labels[i]) {
-          correct_num += 1;
-        }
+        pred_classes.push_back((int)predictions[i]);
       }
+
+      ClassificationMetrics clf_metrics;
+      clf_metrics.compute_metrics(pred_classes, cur_test_dataset_labels);
+
       if (eval_type == falcon::TRAIN) {
-        training_accuracy = (double)correct_num / dataset_size;
-        log_info("[mlp_builder.eval] Dataset size = " +
-                 std::to_string(dataset_size) +
-                 ", correct predicted num = " + std::to_string(correct_num) +
-                 ", training accuracy = " + std::to_string(training_accuracy));
-      }
-      if (eval_type == falcon::TEST) {
-        testing_accuracy = (double)correct_num / dataset_size;
-        log_info("[mlp_builder.eval] Dataset size = " +
-                 std::to_string(dataset_size) +
-                 ", correct predicted num = " + std::to_string(correct_num) +
-                 ", testing accuracy = " + std::to_string(testing_accuracy));
-      }
-    } else {
-      if (eval_type == falcon::TRAIN) {
-        training_accuracy =
-            mean_squared_error(predictions, cur_test_dataset_labels);
+        training_accuracy = clf_metrics.regular_accuracy;
         log_info("[mlp_builder.eval] Training accuracy = " +
                  std::to_string(training_accuracy));
       }
       if (eval_type == falcon::TEST) {
-        testing_accuracy =
-            mean_squared_error(predictions, cur_test_dataset_labels);
+        testing_accuracy = clf_metrics.regular_accuracy;
         log_info("[mlp_builder.eval] Testing accuracy = " +
                  std::to_string(testing_accuracy));
+      }
+
+      // write full classification report to file
+      std::ofstream outfile;
+      if (!report_save_path.empty()) {
+        outfile.open(report_save_path, std::ios_base::app);
+        if (outfile) {
+          outfile << "******** Evaluation Report on " << dataset_str
+                  << " ********\n";
+        }
+      }
+      log_info("Classification Confusion Matrix on " + dataset_str + " is: ");
+      clf_metrics.pretty_print_cm(outfile);
+      log_info("Classification Report on " + dataset_str + " is: ");
+      clf_metrics.classification_report(outfile);
+      outfile.close();
+    } else {
+      double mse;
+      if (eval_type == falcon::TRAIN) {
+        mse = mean_squared_error(predictions, cur_test_dataset_labels);
+        training_accuracy = mse;
+        log_info("[mlp_builder.eval] Training MSE = " +
+                 std::to_string(mse));
+      }
+      if (eval_type == falcon::TEST) {
+        mse = mean_squared_error(predictions, cur_test_dataset_labels);
+        testing_accuracy = mse;
+        log_info("[mlp_builder.eval] Testing MSE = " +
+                 std::to_string(mse));
+      }
+
+      // write regression report to file
+      if (!report_save_path.empty()) {
+        std::ofstream outfile(report_save_path, std::ios_base::app);
+        if (outfile) {
+          outfile << "******** Evaluation Report on " << dataset_str
+                  << " ********\n";
+          outfile << "Mean Squared Error (MSE) = " << std::setprecision(17)
+                  << mse << "\n";
+          outfile.close();
+        }
       }
     }
   }

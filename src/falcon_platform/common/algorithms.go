@@ -389,4 +389,8 @@ type MlpParams struct {
 	NumLayersOutputs []int32 `json:"num_layers_outputs"`
 	// the vector of layers activation functions
 	LayersActivationFuncs []string `json:"layers_activation_funcs"`
+	// Π_DPClip: per-sample L2 clipping threshold C; 0 = disabled
+	DpClipThreshold float64 `json:"dp_clip_threshold"`
+	// Π_DPClip: Gaussian noise std-dev σ_dp; 0 = disabled
+	DpNoiseSigma float64 `json:"dp_noise_sigma"`
 }

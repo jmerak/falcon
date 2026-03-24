@@ -153,6 +153,8 @@ set(SOURCE_FILES
         ../../include/falcon/party/info_exchange.h party/info_exchange.cc
         ../../include/falcon/algorithm/vertical/nn/layer.h ../../include/falcon/algorithm/vertical/nn/mlp.h
         algorithm/vertical/nn/layer.cc algorithm/vertical/nn/mlp.cc
+        ../../include/falcon/algorithm/vertical/nn/dp_clip.h
+        algorithm/vertical/nn/dp_clip.cc
         ../../include/falcon/algorithm/vertical/nn/mlp_builder.h algorithm/vertical/nn/mlp_builder.cc
         ../../include/falcon/utils/pb_converter/nn_converter.h utils/pb_converter/nn_converter.cc
         ../../include/falcon/algorithm/vertical/nn/mlp_ps.h algorithm/vertical/nn/mlp_ps.cc

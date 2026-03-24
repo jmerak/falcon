@@ -33,6 +33,16 @@ public:
   std::vector<Layer> m_layers;
   // the number of layers in total
   int m_n_layers;
+  // DP clipping threshold C (0.0 = disabled)
+  double dp_clip_threshold;
+  // DP Gaussian noise std-dev σ_dp (0.0 = disabled)
+  double dp_noise_sigma;
+  // accumulated DP clip time and comm stats (set during forward_computation)
+  mutable double dp_clip_time_sec = 0.0;
+  mutable long dp_clip_bytes_sent = 0;
+  mutable long dp_clip_bytes_recv = 0;
+  mutable long dp_clip_send_ops = 0;
+  mutable long dp_clip_recv_ops = 0;
 
 public:
   /**

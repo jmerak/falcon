@@ -729,15 +729,14 @@ void train_mlp(Party *party, const std::string &params_str,
     mlp_builder.train(*party);
     //    mlp_builder.eval(*party, falcon::TRAIN, model_report_file);
     mlp_builder.eval(*party, falcon::TEST, model_report_file);
+    // write training phase statistics to report
+    mlp_builder.write_training_stats(model_report_file);
     //    // save model and report
     //    auto* model_weights = new EncodedNumber[weight_size];
     std::string pb_mlp_model_string;
     serialize_mlp_model(mlp_builder.mlp_model, pb_mlp_model_string);
     save_pb_model_string(pb_mlp_model_string, model_save_file);
-    // save_training_report(log_reg_model.getter_training_accuracy(),
-    //    log_reg_model.getter_testing_accuracy(),
-    //    model_report_file);
-    //    delete[] model_weights;
+    // detailed report is now written by mlp_builder.eval() directly
   } else {
     mlp_builder.distributed_train(*party, *worker);
     // in is_distributed_train, parameter server will save the model.

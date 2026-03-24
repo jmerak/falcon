@@ -32,7 +32,8 @@ set(TEST_SOURCE_FILES
         falcon/test_io_util.cc
         falcon/test_model_io.cc
         falcon/test_math_ops.cc
-        falcon/test_metric_classification.cc falcon/test_bench_djcs_t_aux.cc)
+        falcon/test_metric_classification.cc falcon/test_bench_djcs_t_aux.cc
+        falcon/test_dp_clip.cc)
 
 add_executable(falcon_test ${TEST_SOURCE_FILES})
 

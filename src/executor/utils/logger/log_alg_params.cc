@@ -179,6 +179,8 @@ void log_mlp_params(const MlpParams &mlp_params) {
   log_info("mlp_params.optimizer = " + mlp_params.optimizer);
   log_info("mlp_params.metric = " + mlp_params.metric);
   log_info("mlp_params.dp_budget = " + std::to_string(mlp_params.dp_budget));
+  log_info("mlp_params.dp_clip_threshold = " + std::to_string(mlp_params.dp_clip_threshold));
+  log_info("mlp_params.dp_noise_sigma = " + std::to_string(mlp_params.dp_noise_sigma));
   log_info("mlp_params.fit_bias = " + std::to_string(mlp_params.fit_bias));
   log_info("mlp_params.num_layers_neurons: ");
   for (int i = 0; i < mlp_params.num_layers_outputs.size(); i++) {

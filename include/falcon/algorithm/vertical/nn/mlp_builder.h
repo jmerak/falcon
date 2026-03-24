@@ -12,6 +12,23 @@
 #include <falcon/operator/phe/fixed_point_encoder.h>
 #include <falcon/party/party.h>
 
+// Accumulated statistics for a training phase
+struct PhaseStats {
+  double time_sec = 0.0;
+  long bytes_sent = 0;
+  long bytes_recv = 0;
+  long send_ops = 0;
+  long recv_ops = 0;
+};
+
+// Snapshot of communication counters at a point in time
+struct CommSnapshot {
+  long total_bytes_sent = 0;
+  long total_bytes_recv = 0;
+  long total_send_ops = 0;
+  long total_recv_ops = 0;
+};
+
 struct MlpParams {
   // whether classification or regression
   bool is_classification;
@@ -38,6 +55,10 @@ struct MlpParams {
   std::string metric;
   // differential privacy (DP) budget, 0 denotes not use DP
   double dp_budget;
+  // per-sample L2 clipping threshold C for Π_DPClip (0 = disabled)
+  double dp_clip_threshold;
+  // Gaussian noise std-dev σ_dp for Π_DPClip (0 = disabled)
+  double dp_noise_sigma;
   // whether to fit the bias term
   bool fit_bias;
   // the number of neurons in each layer
@@ -78,6 +99,10 @@ public:
   std::string metric;
   // differential privacy (DP) budget, 0 denotes not use DP
   double dp_budget{};
+  // per-sample L2 clipping threshold C for Π_DPClip (0 = disabled)
+  double dp_clip_threshold{};
+  // Gaussian noise std-dev σ_dp for Π_DPClip (0 = disabled)
+  double dp_noise_sigma{};
   // whether to fit the bias term
   bool fit_bias{};
   // the number of neurons in each layer
@@ -88,6 +113,12 @@ public:
 public:
   // the mlp model
   MlpModel mlp_model;
+
+  // accumulated training phase statistics
+  PhaseStats stats_forward;
+  PhaseStats stats_backward;
+  PhaseStats stats_dp_clip;
+  double total_training_time_sec = 0.0;
 
 public:
   /** default constructor */
@@ -298,6 +329,23 @@ public:
    */
   void distributed_eval(const Party &party, const Worker &worker,
                         falcon::DatasetType eval_type);
+
+  /**
+   * snapshot current communication counters from party channels
+   */
+  static CommSnapshot snapshot_comm(const Party &party);
+
+  /**
+   * accumulate the difference between two snapshots into a PhaseStats
+   */
+  static void accumulate_comm(PhaseStats &stats,
+                              const CommSnapshot &before,
+                              const CommSnapshot &after);
+
+  /**
+   * write training phase statistics to report file (append mode)
+   */
+  void write_training_stats(const std::string &report_path) const;
 };
 
 #endif // FALCON_INCLUDE_FALCON_ALGORITHM_VERTICAL_NN_MLP_BUILDER_H_

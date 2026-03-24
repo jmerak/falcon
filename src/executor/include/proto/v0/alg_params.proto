@@ -149,4 +149,8 @@ message MlpParams {
     repeated int32 num_layers_outputs = 14;
     // the vector of layers activation functions
     repeated string layers_activation_funcs = 15;
+    // Π_DPClip: per-sample L2 clipping threshold (C); 0 = disabled
+    double dp_clip_threshold = 16;
+    // Π_DPClip: Gaussian noise std-dev σ_dp; 0 = disabled
+    double dp_noise_sigma = 17;
 }

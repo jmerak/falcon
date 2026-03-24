@@ -554,6 +554,8 @@ func GenerateMLParams(cfg map[string]interface{}) string {
 		FitBias:               res.FitBias,
 		NumLayersOutputs:      res.NumLayersOutputs,
 		LayersActivationFuncs: res.LayersActivationFuncs,
+		DpClipThreshold:       res.DpClipThreshold,
+		DpNoiseSigma:          res.DpNoiseSigma,
 	}
 
 	out, err := proto.Marshal(&dtp)
