@@ -2,65 +2,65 @@
 Confusion Matrix (Class 1 is Positive Class)
                Pred
                Class1    Class0
-True Class1    74        0
-     Class0    40        0
+True Class1    72        2
+     Class0    7        33
 === Classification Report ===
-False negative (FN) = 0
-False positive (FP) = 40
-True positive (TP) = 74
-True negative (TN) = 0
-regular_accuracy = 0.64912280701754388
-balanced_accuracy = 0.5
-sensitivity = 1
-specificity = 0
-precision (PPV) = 0.64912280701754388
-NPV = -nan
-F1 score = 0.78723404255319152
+False negative (FN) = 2
+False positive (FP) = 7
+True positive (TP) = 72
+True negative (TN) = 33      
+regular_accuracy = 0.92105263157894735
+balanced_accuracy = 0.89898648648648649
+sensitivity = 0.97297297297297303
+specificity = 0.82499999999999996
+precision (PPV) = 0.91139240506329111
+NPV = 0.94285714285714284
+F1 score = 0.94117647058823528
 
 -------- Training Phase Statistics --------
-Total training time: 31.909123 sec
-Number of iterations: 10
+Total training time: 346.069522 sec
+Number of iterations: 100
 Batch size: 8
 
 [Weight Initialization]
-  Time: 0.051192 sec
-  Comm sent: 62856 bytes (8 ops)
+  Time: 0.057952 sec
+  Comm sent: 62836 bytes (8 ops)
   Comm recv: 12 bytes (4 ops)
-  Comm total: 62868 bytes (12 ops)
+  Comm total: 62848 bytes (12 ops)
 
 [Batch Index Sync]
-  Time: 0.000164 sec
-  Comm sent: 384 bytes (40 ops)
+  Time: 0.004389 sec
+  Comm sent: 3920 bytes (400 ops)
   Comm recv: 0 bytes (0 ops)
-  Comm total: 384 bytes (40 ops)
+  Comm total: 3920 bytes (400 ops)
 
 [Forward Propagation]
-  Time: 20.454154 sec
-  Comm sent: 730074 bytes (1720 ops)
-  Comm recv: 772701 bytes (1680 ops)
-  Comm total: 1502775 bytes (3400 ops)
+  Time: 223.545292 sec
+  Comm sent: 7337002 bytes (17200 ops)
+  Comm recv: 7727042 bytes (16800 ops)
+  Comm total: 15064044 bytes (34000 ops)
 
 [Backward Propagation]
-  Time: 11.394480 sec
-  Comm sent: 2426426 bytes (1552 ops)
-  Comm recv: 864238 bytes (1208 ops)
-  Comm total: 3290664 bytes (2760 ops)
+  Time: 122.387210 sec
+  Comm sent: 24527742 bytes (16304 ops)
+  Comm recv: 9018493 bytes (12896 ops)
+  Comm total: 33546235 bytes (29200 ops)
 
 [Evaluation]
-  Time: 17.879726 sec
-  Comm sent: 1331312 bytes (2312 ops)
-  Comm recv: 1319285 bytes (2300 ops)
-  Comm total: 2650597 bytes (4612 ops)
+  Time: 20.006097 sec
+  Comm sent: 1350734 bytes (2312 ops)
+  Comm recv: 1319271 bytes (2300 ops)
+  Comm total: 2670005 bytes (4612 ops)
 
 [Total Communication (All Phases)]
-  Sent: 4551052 bytes (5632 ops)
-  Recv: 2956236 bytes (5192 ops)
-  Total: 7507288 bytes (10824 ops)
+  Sent: 33282234 bytes (36224 ops)
+  Recv: 18064818 bytes (32000 ops)
+  Total: 51347052 bytes (68224 ops)
 -------- End Training Phase Statistics --------
 
 -------- Communication Statistics (Party 0) --------
-  Channel[0 <-> 1]: sent 2276543 bytes (2818 ops), recv 1478158 bytes (2596 ops)
-  Channel[0 <-> 2]: sent 2276543 bytes (2818 ops), recv 1478078 bytes (2596 ops)
-  Total: sent 4553086 bytes (5636 ops), recv 2956236 bytes (5192 ops)
-  Total transferred: 7509322 bytes
+  Channel[0 <-> 1]: sent 16642134 bytes (18114 ops), recv 9032387 bytes (16000 ops)
+  Channel[0 <-> 2]: sent 16642134 bytes (18114 ops), recv 9032431 bytes (16000 ops)
+  Total: sent 33284268 bytes (36228 ops), recv 18064818 bytes (32000 ops)
+  Total transferred: 51349086 bytes
 -------- End Communication Statistics --------
