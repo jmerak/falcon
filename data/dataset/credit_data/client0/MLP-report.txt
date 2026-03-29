@@ -1,0 +1,132 @@
+******** Evaluation Report on testing dataset ********
+Confusion Matrix (Class 1 is Positive Class)
+               Pred
+               Class1    Class0
+True Class1    0        1286
+     Class0    0        4714
+=== Classification Report ===
+False negative (FN) = 1286
+False positive (FP) = 0
+True positive (TP) = 0
+True negative (TN) = 4714
+regular_accuracy = 0.78566666666666662
+balanced_accuracy = 0.5
+sensitivity = 0
+specificity = 1
+precision (PPV) = -nan
+NPV = 0.78566666666666662
+F1 score = 0
+
+-------- Training Phase Statistics --------
+Total training time: 544.333717 sec
+Number of iterations: 100
+Batch size: 8
+
+[Weight Initialization]
+  Time: 0.039919 sec
+  Comm sent: 49350 bytes (8 ops)
+  Comm recv: 10 bytes (4 ops)
+  Comm total: 49360 bytes (12 ops)
+
+[Batch Index Sync]
+  Time: 0.004822 sec
+  Comm sent: 4928 bytes (400 ops)
+  Comm recv: 0 bytes (0 ops)
+  Comm total: 4928 bytes (400 ops)
+
+[Forward Propagation]
+  Time: 353.785360 sec
+  Comm sent: 7337054 bytes (17200 ops)
+  Comm recv: 7726966 bytes (16800 ops)
+  Comm total: 15064020 bytes (34000 ops)
+
+[Backward Propagation]
+  Time: 190.425791 sec
+  Comm sent: 19897408 bytes (15296 ops)
+  Comm recv: 8146588 bytes (11888 ops)
+  Comm total: 28043996 bytes (27184 ops)
+
+[Evaluation]
+  Time: 1776.361602 sec
+  Comm sent: 71055550 bytes (120032 ops)
+  Comm recv: 69433419 bytes (120020 ops)
+  Comm total: 140488969 bytes (240052 ops)
+
+[Total Communication (All Phases)]
+  Sent: 98344290 bytes (152936 ops)
+  Recv: 85306983 bytes (148712 ops)
+  Total: 183651273 bytes (301648 ops)
+-------- End Training Phase Statistics --------
+
+-------- Communication Statistics (Party 0) --------
+  Channel[0 <-> 1]: sent 49245641 bytes (76470 ops), recv 42556953 bytes (74356 ops)
+  Channel[0 <-> 2]: sent 49245641 bytes (76470 ops), recv 42750030 bytes (74356 ops)
+  Total: sent 98491282 bytes (152940 ops), recv 85306983 bytes (148712 ops)
+  Total transferred: 183798265 bytes
+-------- End Communication Statistics --------
+******** Evaluation Report on testing dataset ********
+Confusion Matrix (Class 1 is Positive Class)
+               Pred
+               Class1    Class0
+True Class1    0        1286
+     Class0    0        4714
+=== Classification Report ===
+False negative (FN) = 1286
+False positive (FP) = 0
+True positive (TP) = 0
+True negative (TN) = 4714
+regular_accuracy = 0.78566666666666662
+balanced_accuracy = 0.5
+sensitivity = 0
+specificity = 1
+precision (PPV) = -nan
+NPV = 0.78566666666666662
+F1 score = 0
+
+-------- Training Phase Statistics --------
+Total training time: 560.556033 sec
+Number of iterations: 100
+Batch size: 8
+
+[Weight Initialization]
+  Time: 0.053080 sec
+  Comm sent: 49344 bytes (8 ops)
+  Comm recv: 10 bytes (4 ops)
+  Comm total: 49354 bytes (12 ops)
+
+[Batch Index Sync]
+  Time: 0.011078 sec
+  Comm sent: 4928 bytes (400 ops)
+  Comm recv: 0 bytes (0 ops)
+  Comm total: 4928 bytes (400 ops)
+
+[Forward Propagation]
+  Time: 368.469558 sec
+  Comm sent: 7336960 bytes (17200 ops)
+  Comm recv: 7727044 bytes (16800 ops)
+  Comm total: 15064004 bytes (34000 ops)
+
+[Backward Propagation]
+  Time: 191.907711 sec
+  Comm sent: 19897186 bytes (15296 ops)
+  Comm recv: 8146514 bytes (11888 ops)
+  Comm total: 28043700 bytes (27184 ops)
+
+[Evaluation]
+  Time: 1760.972360 sec
+  Comm sent: 71055638 bytes (120032 ops)
+  Comm recv: 69433512 bytes (120020 ops)
+  Comm total: 140489150 bytes (240052 ops)
+
+[Total Communication (All Phases)]
+  Sent: 98344056 bytes (152936 ops)
+  Recv: 85307080 bytes (148712 ops)
+  Total: 183651136 bytes (301648 ops)
+-------- End Training Phase Statistics --------
+
+-------- Communication Statistics (Party 0) --------
+  Channel[0 <-> 1]: sent 49245524 bytes (76470 ops), recv 42557058 bytes (74356 ops)
+  Channel[0 <-> 2]: sent 49245524 bytes (76470 ops), recv 42750022 bytes (74356 ops)
+  Total: sent 98491048 bytes (152940 ops), recv 85307080 bytes (148712 ops)
+  Total transferred: 183798128 bytes
+-------- End Communication Statistics --------

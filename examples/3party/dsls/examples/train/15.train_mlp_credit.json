@@ -1,6 +1,6 @@
 {
-  "job_name": "dp_clip_mlp_training",
-  "job_info": "MLP privacy-preserving training with Π_DPClip (L2 gradient clipping + Gaussian noise)",
+  "job_name": "credit_mlp_training",
+  "job_info": "MLP training on credit card default dataset (baseline, no DP)",
   "job_fl_type": "vertical",
   "existing_key": 1,
   "party_nums": 3,
@@ -11,9 +11,9 @@
       "addr": "127.0.0.1:30005",
       "party_type": "active",
       "path": {
-        "data_input": "/opt/falcon/data/dataset/breast_cancer_data/client0",
-        "data_output": "/opt/falcon/data/dataset/breast_cancer_data/client0",
-        "model_path": "/opt/falcon/data/dataset/breast_cancer_data/client0"
+        "data_input": "/opt/falcon/data/dataset/credit_data/client0",
+        "data_output": "/opt/falcon/data/dataset/credit_data/client0",
+        "model_path": "/opt/falcon/data/dataset/credit_data/client0"
       }
     },
     {
@@ -21,9 +21,9 @@
       "addr": "127.0.0.1:30006",
       "party_type": "passive",
       "path": {
-        "data_input": "/opt/falcon/data/dataset/breast_cancer_data/client1",
-        "data_output": "/opt/falcon/data/dataset/breast_cancer_data/client1",
-        "model_path": "/opt/falcon/data/dataset/breast_cancer_data/client1"
+        "data_input": "/opt/falcon/data/dataset/credit_data/client1",
+        "data_output": "/opt/falcon/data/dataset/credit_data/client1",
+        "model_path": "/opt/falcon/data/dataset/credit_data/client1"
       }
     },
     {
@@ -31,9 +31,9 @@
       "addr": "127.0.0.1:30007",
       "party_type": "passive",
       "path": {
-        "data_input": "/opt/falcon/data/dataset/breast_cancer_data/client2",
-        "data_output": "/opt/falcon/data/dataset/breast_cancer_data/client2",
-        "model_path": "/opt/falcon/data/dataset/breast_cancer_data/client2"
+        "data_input": "/opt/falcon/data/dataset/credit_data/client2",
+        "data_output": "/opt/falcon/data/dataset/credit_data/client2",
+        "model_path": "/opt/falcon/data/dataset/credit_data/client2"
       }
     }
   ],
@@ -64,15 +64,13 @@
           "metric": "acc",
           "dp_budget": 0.1,
           "fit_bias": true,
-          "num_layers_outputs": [30, 2, 1],
-          "layers_activation_funcs": ["relu", "logistic"],
-          "dp_clip_threshold": 1.0,
-          "dp_noise_sigma": 0.01
+          "num_layers_outputs": [23, 2, 1],
+          "layers_activation_funcs": ["relu", "logistic"]
         }
       },
       "output_configs": {
-        "trained_model": "DPClip-MLP-s001-model.pb",
-        "evaluation_report": "DPClip-MLP-s001-report.txt"
+        "trained_model": "MLP-model.pb",
+        "evaluation_report": "MLP-report.txt"
       }
     }
   }

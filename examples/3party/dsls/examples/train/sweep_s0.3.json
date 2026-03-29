@@ -1,6 +1,6 @@
 {
-  "job_name": "dp_clip_mlp_training",
-  "job_info": "MLP privacy-preserving training with Π_DPClip (L2 gradient clipping + Gaussian noise)",
+  "job_name": "dp_clip_mlp_sweep_s0.3",
+  "job_info": "Sigma sweep: C=1.0, sigma=0.3",
   "job_fl_type": "vertical",
   "existing_key": 1,
   "party_nums": 3,
@@ -67,12 +67,12 @@
           "num_layers_outputs": [30, 2, 1],
           "layers_activation_funcs": ["relu", "logistic"],
           "dp_clip_threshold": 1.0,
-          "dp_noise_sigma": 0.01
+          "dp_noise_sigma": 0.3
         }
       },
       "output_configs": {
-        "trained_model": "DPClip-MLP-s001-model.pb",
-        "evaluation_report": "DPClip-MLP-s001-report.txt"
+        "trained_model": "DPClip-s0.3-model.pb",
+        "evaluation_report": "DPClip-s0.3-report.txt"
       }
     }
   }

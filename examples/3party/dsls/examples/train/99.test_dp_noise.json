@@ -1,6 +1,6 @@
 {
   "job_name": "dp_clip_mlp_training",
-  "job_info": "MLP privacy-preserving training with Π_DPClip (L2 gradient clipping + Gaussian noise)",
+  "job_info": "MLP privacy-preserving training with \u03a0_DPClip (L2 gradient clipping + Gaussian noise)",
   "job_fl_type": "vertical",
   "existing_key": 1,
   "party_nums": 3,
@@ -53,7 +53,7 @@
         "algorithm_config": {
           "is_classification": true,
           "batch_size": 8,
-          "max_iteration": 100,
+          "max_iteration": 10,
           "converge_threshold": 0.0001,
           "with_regularization": true,
           "alpha": 0.01,
@@ -64,15 +64,22 @@
           "metric": "acc",
           "dp_budget": 0.1,
           "fit_bias": true,
-          "num_layers_outputs": [30, 2, 1],
-          "layers_activation_funcs": ["relu", "logistic"],
-          "dp_clip_threshold": 1.0,
-          "dp_noise_sigma": 0.01
+          "num_layers_outputs": [
+            30,
+            2,
+            1
+          ],
+          "layers_activation_funcs": [
+            "relu",
+            "logistic"
+          ],
+          "dp_clip_threshold": 0.1,
+          "dp_noise_sigma": 10.0
         }
       },
       "output_configs": {
-        "trained_model": "DPClip-MLP-s001-model.pb",
-        "evaluation_report": "DPClip-MLP-s001-report.txt"
+        "trained_model": "DPClip-TEST-model.pb",
+        "evaluation_report": "DPClip-TEST-report.txt"
       }
     }
   }

@@ -1,0 +1,58 @@
+
+-------- Training Phase Statistics --------
+Total training time: 388.436510 sec
+Number of iterations: 100
+Batch size: 8
+
+[Weight Initialization]
+  Time: 0.007128 sec
+  Comm sent: 5 bytes (2 ops)
+  Comm recv: 24674 bytes (4 ops)
+  Comm total: 24679 bytes (6 ops)
+
+[Batch Index Sync]
+  Time: 0.001815 sec
+  Comm sent: 0 bytes (0 ops)
+  Comm recv: 2464 bytes (200 ops)
+  Comm total: 2464 bytes (200 ops)
+
+[Forward Propagation]
+  Time: 275.899035 sec
+  Comm sent: 6177957 bytes (13200 ops)
+  Comm recv: 5594635 bytes (13400 ops)
+  Comm total: 11772592 bytes (26600 ops)
+
+[Backward Propagation]
+  Time: 112.485754 sec
+  Comm sent: 4169677 bytes (5944 ops)
+  Comm recv: 9959638 bytes (7648 ops)
+  Comm total: 14129315 bytes (13592 ops)
+
+[DP Clipping & Noise (included in Forward)]
+  Time: 83.869603 sec
+  Comm sent: 2314386 bytes (4800 ops)
+  Comm recv: 1926107 bytes (4800 ops)
+  Comm total: 4240493 bytes (9600 ops)
+
+[DP Parameters]
+  Clip threshold (C): 1.000000
+  Noise sigma: 0.100000
+
+[Evaluation]
+  Time: 815.324694 sec
+  Comm sent: 34716918 bytes (60010 ops)
+  Comm recv: 35524178 bytes (60016 ops)
+  Comm total: 70241096 bytes (120026 ops)
+
+[Total Communication (All Phases)]
+  Sent: 45064557 bytes (79156 ops)
+  Recv: 51105589 bytes (81268 ops)
+  Total: 96170146 bytes (160424 ops)
+-------- End Training Phase Statistics --------
+
+-------- Communication Statistics (Party 2) --------
+  Channel[2 <-> 0]: sent 45064557 bytes (79156 ops), recv 51179085 bytes (81270 ops)
+  Channel[2 <-> 1]: sent 0 bytes (0 ops), recv 0 bytes (0 ops)
+  Total: sent 45064557 bytes (79156 ops), recv 51179085 bytes (81270 ops)
+  Total transferred: 96243642 bytes
+-------- End Communication Statistics --------

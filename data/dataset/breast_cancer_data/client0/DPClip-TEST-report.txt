@@ -1,0 +1,76 @@
+******** Evaluation Report on testing dataset ********
+Confusion Matrix (Class 1 is Positive Class)
+               Pred
+               Class1    Class0
+True Class1    74        0
+     Class0    40        0
+=== Classification Report ===
+False negative (FN) = 0
+False positive (FP) = 40
+True positive (TP) = 74
+True negative (TN) = 0
+regular_accuracy = 0.64912280701754388
+balanced_accuracy = 0.5
+sensitivity = 1
+specificity = 0
+precision (PPV) = 0.64912280701754388
+NPV = -nan
+F1 score = 0.78723404255319152
+
+-------- Training Phase Statistics --------
+Total training time: 39.562182 sec
+Number of iterations: 10
+Batch size: 8
+
+[Weight Initialization]
+  Time: 0.058793 sec
+  Comm sent: 62860 bytes (8 ops)
+  Comm recv: 12 bytes (4 ops)
+  Comm total: 62872 bytes (12 ops)
+
+[Batch Index Sync]
+  Time: 0.000218 sec
+  Comm sent: 384 bytes (40 ops)
+  Comm recv: 0 bytes (0 ops)
+  Comm total: 384 bytes (40 ops)
+
+[Forward Propagation]
+  Time: 27.941658 sec
+  Comm sent: 1112900 bytes (2680 ops)
+  Comm recv: 1235601 bytes (2640 ops)
+  Comm total: 2348501 bytes (5320 ops)
+
+[Backward Propagation]
+  Time: 11.558603 sec
+  Comm sent: 2398846 bytes (1552 ops)
+  Comm recv: 864229 bytes (1208 ops)
+  Comm total: 3263075 bytes (2760 ops)
+
+[DP Clipping & Noise (included in Forward)]
+  Time: 8.199712 sec
+  Comm sent: 382792 bytes (960 ops)
+  Comm recv: 462888 bytes (960 ops)
+  Comm total: 845680 bytes (1920 ops)
+
+[DP Parameters]
+  Clip threshold (C): 0.100000
+  Noise sigma: 10.000000
+
+[Evaluation]
+  Time: 16.824462 sec
+  Comm sent: 1331286 bytes (2312 ops)
+  Comm recv: 1319305 bytes (2300 ops)
+  Comm total: 2650591 bytes (4612 ops)
+
+[Total Communication (All Phases)]
+  Sent: 4906276 bytes (6592 ops)
+  Recv: 3419147 bytes (6152 ops)
+  Total: 8325423 bytes (12744 ops)
+-------- End Training Phase Statistics --------
+
+-------- Communication Statistics (Party 0) --------
+  Channel[0 <-> 1]: sent 2454155 bytes (3298 ops), recv 1709583 bytes (3076 ops)
+  Channel[0 <-> 2]: sent 2454155 bytes (3298 ops), recv 1709564 bytes (3076 ops)
+  Total: sent 4908310 bytes (6596 ops), recv 3419147 bytes (6152 ops)
+  Total transferred: 8327457 bytes
+-------- End Communication Statistics --------
